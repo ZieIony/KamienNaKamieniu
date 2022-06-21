@@ -1,25 +1,23 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using CompoEngine.Physic;
+﻿using CompoEngine.Physics;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Dynamics.Joints;
-using SFML.Graphics;
-using SFML.Window;
 using SFML.Audio;
+using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 
-namespace CompoEngine.States
-{
-    internal class GameplayState : IState
-    {
+namespace CompoEngine.States {
+    internal class GameplayState: IState {
         private Font font;
         private Text timerText;
         private Emitter gwiazdkaEmitter;
         private Fixture _currentFixture;
         private FixedMouseJoint currentMouseJoint;
-        private PhysicObject _ground1, _ground2, _ground3;
+        private PhysicsObject _ground1, _ground2, _ground3;
 
         private Collection<Brick> bricks { get; set; }
         private Stopwatch _shootingStopwatch;
@@ -27,11 +25,11 @@ namespace CompoEngine.States
         private float roundLength = 12000.0f;
         private Text currentPlayerText;
         private Stopwatch _dropPackagesStopwatch;
-		private Collection<Ball> balls { get; set; }
-		private Collection<Emitter> emitters { get; set; }
-		SFML.Audio.Music music;
+        private Collection<Ball> balls { get; set; }
+        private Collection<Emitter> emitters { get; set; }
+        SFML.Audio.Music music;
         private Side currentPlayer { get; set; }
-        private float gameOverLineOffset = 4.75f;        
+        private float gameOverLineOffset = 4.75f;
         private float gameOverSpriteScale = 0.0f;
         private Sprite gameOverLeftSprite, gameOverRightSprite;
         private Sprite leftPlayerSprite;
@@ -41,13 +39,12 @@ namespace CompoEngine.States
         private Sprite blackSprite;
         private float blackoutAmount;
 
-		Random rand = new Random();
+        Random rand = new Random();
         private Side wygrywaSide;
-		private int goalpha = 0;
+        private int goalpha = 0;
 
 
-        public void OnStateEntered(IState previousState)
-        {
+        public void OnStateEntered(IState previousState) {
             bricks = new Collection<Brick>();
             balls = new Collection<Ball>();
             emitters = new Collection<Emitter>();
@@ -56,7 +53,7 @@ namespace CompoEngine.States
             gameOverRightSprite = new Sprite(new Texture(Application.Images["gameoverScreenRight"]));
             gameOverRightSprite.Scale = new Vector2f(1024.0f / gameOverRightSprite.Texture.Size.X, 768.0f / gameOverRightSprite.Texture.Size.Y);
             backgroundSprite = new Sprite(new Texture(Application.Images["bg"]));
-            backgroundSprite.Scale = new Vector2f(1024.0f/backgroundSprite.Texture.Size.X, 768.0f/backgroundSprite.Texture.Size.Y);
+            backgroundSprite.Scale = new Vector2f(1024.0f / backgroundSprite.Texture.Size.X, 768.0f / backgroundSprite.Texture.Size.Y);
             blackSprite = new Sprite(new Texture(Application.Images["splash"]));
             blackoutAmount = 255;
 
@@ -66,10 +63,10 @@ namespace CompoEngine.States
 
             rightPlayerSprite = new Sprite(new Texture(Application.Images["head_red"]));
             rightPlayerSprite.Position = new Vector2f(1024, 0.0f);
-			rightPlayerSprite.Origin = new Vector2f(100, 0);
-			rightPlayerSprite.Scale = new Vector2f(0.5f, 0.5f);
+            rightPlayerSprite.Origin = new Vector2f(100, 0);
+            rightPlayerSprite.Scale = new Vector2f(0.5f, 0.5f);
 
-            AddBrick(new Vector2f(1.25f, 5.25f), 0.0f,  Side.Left, BrickType.Wall1);
+            AddBrick(new Vector2f(1.25f, 5.25f), 0.0f, Side.Left, BrickType.Wall1);
             AddBrick(new Vector2f(1.75f, 5.25f), 0.0f, Side.Left, BrickType.Wall1);
             AddBrick(new Vector2f(2.25f, 5.25f), 0.0f, Side.Left, BrickType.Wall1);
             AddBrick(new Vector2f(2.75f, 5.25f), 0.0f, Side.Left, BrickType.Wall1);
@@ -87,7 +84,7 @@ namespace CompoEngine.States
             AddBrick(new Vector2f(7.75f, 5.25f), 0.0f, Side.Right, BrickType.Wall1);
             AddBrick(new Vector2f(8.25f, 5.25f), 0.0f, Side.Right, BrickType.Wall1);
             AddBrick(new Vector2f(8.75f, 5.25f), 0.0f, Side.Right, BrickType.Wall1);
-            AddBrick(new Vector2f(7.25f, 4.75f), (float) Math.PI, Side.Right, BrickType.Shooting);
+            AddBrick(new Vector2f(7.25f, 4.75f), (float)Math.PI, Side.Right, BrickType.Shooting);
             AddBrick(new Vector2f(7.75f, 4.75f), 0.0f, Side.Right, BrickType.Wall2);
             AddBrick(new Vector2f(8.25f, 4.75f), 0.0f, Side.Right, BrickType.Wall2);
             AddBrick(new Vector2f(8.75f, 4.75f), 0.0f, Side.Right, BrickType.Wall2);
@@ -114,34 +111,32 @@ namespace CompoEngine.States
                 new Texture(Application.Images["fire_00020"])
             }, new Vector2f(100, 100), new Vector2f(0, -5));
             gwiazdkaEmitter.velScale = 0.02f;
-			gwiazdkaEmitter.lifeSpan = 0.5f;
-			gwiazdkaEmitter.Speed = 20;
-			gwiazdkaEmitter.emitterLifeSpan = 100;
-			gwiazdkaEmitter.spawnRate = 0.05f;
-			gwiazdkaEmitter.scale = 0.3f;
+            gwiazdkaEmitter.lifeSpan = 0.5f;
+            gwiazdkaEmitter.Speed = 20;
+            gwiazdkaEmitter.emitterLifeSpan = 100;
+            gwiazdkaEmitter.spawnRate = 0.05f;
+            gwiazdkaEmitter.scale = 0.3f;
 
             // Create a graphical string to display
-			font = new Font("assets/BRLNSDB.TTF");
+            font = new Font("assets/BRLNSDB.TTF");
             timerText = new Text("0", font);
             currentPlayerText = new Text("Left", font, 50);
 
-			music = new SFML.Audio.Music("assets/music1.ogg");
-			music.Play();
+            music = new SFML.Audio.Music("assets/music1.ogg");
+            music.Play();
 
             Application.World.ContactManager.OnBroadphaseCollision += OnBroadphaseCollision;
         }
 
-        private void SetupGround()
-        {
-            var bodyDesc = new BodyDesc
-                {
-                    StartPos = new Microsoft.Xna.Framework.Vector2(1.729f, 6.5f),
-                    BodyType = BodyType.Static,
-                    Shape = new PolygonShape(0),
-                    Size =
+        private void SetupGround() {
+            var bodyDesc = new BodyDesc {
+                StartPos = new Microsoft.Xna.Framework.Vector2(1.729f, 6.5f),
+                BodyType = BodyType.Static,
+                Shape = new PolygonShape(0),
+                Size =
                         new Microsoft.Xna.Framework.Vector2(3.457f, 2.4f)
-                };
-            _ground1 = new PhysicObject(new Texture(Application.Images["ground_left"]), bodyDesc, new Vector2f(0f, 0f), new Vector2f(0f,-20.0f));
+            };
+            _ground1 = new PhysicsObject(new Texture(Application.Images["ground_left"]), bodyDesc, new Vector2f(0f, 0f), new Vector2f(0f, -20.0f));
 
             var ground2desc = new BodyDesc {
                 StartPos = new Microsoft.Xna.Framework.Vector2(10.0f - 1.729f, 6.5f),
@@ -150,7 +145,7 @@ namespace CompoEngine.States
                 Size =
                     new Microsoft.Xna.Framework.Vector2(3.457f, 2.4f)
             };
-            _ground2 = new PhysicObject(new Texture(Application.Images["ground_right"]), ground2desc, new Vector2f(0f, 0f), new Vector2f(0f, -20.0f));
+            _ground2 = new PhysicsObject(new Texture(Application.Images["ground_right"]), ground2desc, new Vector2f(0f, 0f), new Vector2f(0f, -20.0f));
 
             var wall1desc = new BodyDesc {
                 StartPos = new Microsoft.Xna.Framework.Vector2(-5.0f, 10.0f),
@@ -158,7 +153,7 @@ namespace CompoEngine.States
                 Shape = new PolygonShape(0),
                 Size = new Microsoft.Xna.Framework.Vector2(10.0f, 30.0f)
             };
-            new PhysicObject(new Texture(Application.Images["brick1"]), wall1desc);
+            new PhysicsObject(new Texture(Application.Images["brick1"]), wall1desc);
 
             var wall2desc = new BodyDesc {
                 StartPos = new Microsoft.Xna.Framework.Vector2(15.0f, 10.0f),
@@ -166,7 +161,7 @@ namespace CompoEngine.States
                 Shape = new PolygonShape(0),
                 Size = new Microsoft.Xna.Framework.Vector2(10.0f, 30.0f)
             };
-            new PhysicObject(new Texture(Application.Images["brick1"]), wall2desc);
+            new PhysicsObject(new Texture(Application.Images["brick1"]), wall2desc);
 
 
             var sandacz = new BodyDesc {
@@ -175,13 +170,11 @@ namespace CompoEngine.States
                 Shape = new PolygonShape(0),
                 Size = new Microsoft.Xna.Framework.Vector2(4.0f, 0.5f)
             };
-            _ground3 = new PhysicObject(new Texture(Application.Images["sand"]), sandacz, new Vector2f(0f, 0f), new Vector2f(0f, -20.0f));
+            _ground3 = new PhysicsObject(new Texture(Application.Images["sand"]), sandacz, new Vector2f(0f, 0f), new Vector2f(0f, -20.0f));
         }
 
-        private Ball AddBall(Vector2f pos)
-        {
-            var ballDesc = new BodyDesc
-            {
+        private Ball AddBall(Vector2f pos) {
+            var ballDesc = new BodyDesc {
                 StartPos = new Microsoft.Xna.Framework.Vector2(pos.X, pos.Y),
                 BodyType = FarseerPhysics.Dynamics.BodyType.Dynamic,
                 Shape = new FarseerPhysics.Collision.Shapes.CircleShape(0.1f, 250),
@@ -191,7 +184,7 @@ namespace CompoEngine.States
 
 
 
-            var physicBrick = new PhysicObject(new Texture(Application.Images["cannonball"]), ballDesc);
+            var physicBrick = new PhysicsObject(new Texture(Application.Images["cannonball"]), ballDesc);
 
 
             var ball = new Ball() {
@@ -199,7 +192,7 @@ namespace CompoEngine.States
             };
 
             ball.PhysicObject.Body.OnCollision += Body_OnCollision;
-            ball.PhysicObject.Body.UserData= ball ;
+            ball.PhysicObject.Body.UserData = ball;
 
             return ball;
         }
@@ -208,16 +201,17 @@ namespace CompoEngine.States
             var ball = (fixtureA.Body.UserData is Ball ? fixtureA.Body.UserData : fixtureB.Body.UserData) as Ball;
             var brick = (fixtureA.Body.UserData is Ball ? fixtureB.Body.UserData : fixtureA.Body.UserData) as Brick;
 
-            if(!fixtureA.Body.IsStatic)
-            Application.World.RemoveBody(fixtureA.Body);
-            
-            if(!fixtureB.Body.IsStatic) Application.World.RemoveBody(fixtureB.Body);
-            
+            if (!fixtureA.Body.IsStatic)
+                Application.World.RemoveBody(fixtureA.Body);
+
+            if (!fixtureB.Body.IsStatic)
+                Application.World.RemoveBody(fixtureB.Body);
+
             balls.Remove(ball);
             bricks.Remove(brick);
-            
+
             explosion(ball.PhysicObject.Body.Position);
-			//System.Console.WriteLine("explosion");
+            //System.Console.WriteLine("explosion");
 
             return true;
         }
@@ -227,239 +221,227 @@ namespace CompoEngine.States
             foreach (var brick in bricks) {
                 var impulse = (brick.PhysicObject.Body.Position - position);
                 var d = impulse.Length();
-                if(d <= 0.0f) continue;
+                if (d <= 0.0f)
+                    continue;
                 impulse.Normalize();
                 impulse *= 25.0f / (d * d);
                 brick.PhysicObject.Body.ApplyLinearImpulse(impulse);
 
-				Emitter emitter = new Emitter(new Texture[]{
+                Emitter emitter = new Emitter(new Texture[]{
                     new Texture(Application.Images["explosion"]),
                     new Texture(Application.Images["explosion1"]),
                     new Texture(Application.Images["explosion2"]),
                     new Texture(Application.Images["explosion3"])
-                }, new Vector2f(position.X * PhysicObject.PhysicScale, position.Y * PhysicObject.PhysicScale), new Vector2f(0, 0));
-				emitters.Add(emitter);
-				emitter.velScale = 1.0f;
-				emitter.spawnRate = 0.001f;
-				emitter.emitterLifeSpan = 0.01f;
-				emitter.Speed = 6;
+                }, new Vector2f(position.X * PhysicsObject.PhysicScale, position.Y * PhysicsObject.PhysicScale), new Vector2f(0, 0));
+                emitters.Add(emitter);
+                emitter.velScale = 1.0f;
+                emitter.spawnRate = 0.001f;
+                emitter.emitterLifeSpan = 0.01f;
+                emitter.Speed = 6;
 
-				/*Sound sound = Application.Sounds["explosion"];
+                /*Sound sound = Application.Sounds["explosion"];
 				if (sound.Status != SoundStatus.Playing) {
 					sound.PlayingOffset = Time.FromMilliseconds(0);
 					sound.Play();
 				}*/
 
-			}
+            }
 
 
         }
 
-        private void AddBrick(Vector2f pos, float rotation, Side side, BrickType type)
-        {
-			string sufix;
-			if (side == Side.Left) {
-				sufix = "";
-			} else if (side == Side.Right) {
-				sufix = "2";
-			} else {
-				sufix = "_uns";
-			}
+        private void AddBrick(Vector2f pos, float rotation, Side side, BrickType type) {
+            string sufix;
+            if (side == Side.Left) {
+                sufix = "";
+            } else if (side == Side.Right) {
+                sufix = "2";
+            } else {
+                sufix = "_uns";
+            }
 
-            var brickDesc = new BodyDesc
-                {
-                    StartPos = new Microsoft.Xna.Framework.Vector2(pos.X, pos.Y),
-                    BodyType = BodyType.Dynamic,
-                    Shape = new PolygonShape(100.0f),
-                    Size =
+            var brickDesc = new BodyDesc {
+                StartPos = new Microsoft.Xna.Framework.Vector2(pos.X, pos.Y),
+                BodyType = BodyType.Dynamic,
+                Shape = new PolygonShape(100.0f),
+                Size =
                         new Microsoft.Xna.Framework.Vector2(0.5f, 0.5f),
-                    Resitution = 0.3f
-                };
-			string[] imagePath;
-			PhysicObject physicBrick;
+                Resitution = 0.3f
+            };
+            string[] imagePath;
+            PhysicsObject physicBrick;
 
-			switch (type) {
-				case BrickType.Wall1:
-					physicBrick = new PhysicObject(new Texture(Application.Images["brick" + sufix + "_door_00000"]), brickDesc);
-					imagePath = new string[50];
-					for (int i = 0; i < 50; i++) {
-						imagePath[i] = string.Format("brick"+sufix+"_door_{0:00000}", i);
-					}
-					physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Wall2:
-					physicBrick = new PhysicObject(new Texture(Application.Images["window" + sufix + "_open_00000"]), brickDesc);
-					imagePath = new string[50];
-					for (int i = 0; i < 50; i++) {
-						imagePath[i] = string.Format("window" + sufix + "_open_{0:00000}", i);
-					}
-						physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Wall3:
-					imagePath = new string[] { "brick" + sufix + "_blanks" };
-					physicBrick = new PhysicObject(imagePath, brickDesc);
-					break;
-				case BrickType.Wall4:
-					physicBrick = new PhysicObject(new Texture(Application.Images["brick" + sufix + "_roof_00000"]), brickDesc);
-					imagePath = new string[24];
-					for (int i = 0; i < 24; i++) {
-						imagePath[i] = string.Format("brick" + sufix + "_roof_{0:00000}", i);
-					}
-					physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Shooting:
-					physicBrick = new PhysicObject(new Texture(Application.Images["brick" + sufix + "_cannon_00000"]), brickDesc);
-					imagePath = new string[17];
-					for (int i = 0; i < 17; i++) {
-						imagePath[i] = string.Format("brick" + sufix + "_cannon_{0:00000}", i);
-					}
-					physicBrick.AddAnimation(imagePath);
+            switch (type) {
+                case BrickType.Wall1:
+                    physicBrick = new PhysicsObject(new Texture(Application.Images["brick" + sufix + "_door_00000"]), brickDesc);
+                    imagePath = new string[50];
+                    for (int i = 0; i < 50; i++) {
+                        imagePath[i] = string.Format("brick" + sufix + "_door_{0:00000}", i);
+                    }
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Wall2:
+                    physicBrick = new PhysicsObject(new Texture(Application.Images["window" + sufix + "_open_00000"]), brickDesc);
+                    imagePath = new string[50];
+                    for (int i = 0; i < 50; i++) {
+                        imagePath[i] = string.Format("window" + sufix + "_open_{0:00000}", i);
+                    }
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Wall3:
+                    imagePath = new string[] { "brick" + sufix + "_blanks" };
+                    physicBrick = new PhysicsObject(imagePath, brickDesc);
+                    break;
+                case BrickType.Wall4:
+                    physicBrick = new PhysicsObject(new Texture(Application.Images["brick" + sufix + "_roof_00000"]), brickDesc);
+                    imagePath = new string[24];
+                    for (int i = 0; i < 24; i++) {
+                        imagePath[i] = string.Format("brick" + sufix + "_roof_{0:00000}", i);
+                    }
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Shooting:
+                    physicBrick = new PhysicsObject(new Texture(Application.Images["brick" + sufix + "_cannon_00000"]), brickDesc);
+                    imagePath = new string[17];
+                    for (int i = 0; i < 17; i++) {
+                        imagePath[i] = string.Format("brick" + sufix + "_cannon_{0:00000}", i);
+                    }
+                    physicBrick.AddAnimation(imagePath);
                     physicBrick.Speed = 48;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException("type");
-			}
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("type");
+            }
 
 
-            Brick brick = new Brick()
-                {
-                    PhysicObject = physicBrick,
-                    Side = side,
-                    Type = type
-                };
+            Brick brick = new Brick() {
+                PhysicObject = physicBrick,
+                Side = side,
+                Type = type
+            };
 
-			physicBrick.Body.UserData = brick;
+            physicBrick.Body.UserData = brick;
             physicBrick.Body.Rotation = rotation;
             bricks.Add(brick);
         }
 
-		private void DropBlock()
-		{
+        private void DropBlock() {
 
-		    bool cannonFound = false;
-		    foreach (var brick1 in bricks)
-		    {
-		        if (brick1.Type == BrickType.Shooting && brick1.Side != currentPlayer)
-		        {
-		            cannonFound = true;
-		        }
-		    }
+            bool cannonFound = false;
+            foreach (var brick1 in bricks) {
+                if (brick1.Type == BrickType.Shooting && brick1.Side != currentPlayer) {
+                    cannonFound = true;
+                }
+            }
 
             var type = BrickType.Shooting;
-		    
-            if (cannonFound)
-            {
+
+            if (cannonFound) {
                 var value = rand.Next(8);
 
-                if (value > 4)
-                {
+                if (value > 4) {
                     type = BrickType.Shooting;
-                }
-                else
-                {
+                } else {
                     type = (BrickType)value;
                 }
 
-                
+
             }
-           
-			var brickDesc = new BodyDesc {
+
+            var brickDesc = new BodyDesc {
                 StartPos = new Microsoft.Xna.Framework.Vector2((float)(rand.NextDouble() * 10), -0.25f),
                 BodyType = BodyType.Dynamic,
-				Shape = new PolygonShape(100),
-				Size =
-					new Microsoft.Xna.Framework.Vector2(0.5f, 0.5f),
-				Resitution = 0.3f
-			};
+                Shape = new PolygonShape(100),
+                Size =
+                    new Microsoft.Xna.Framework.Vector2(0.5f, 0.5f),
+                Resitution = 0.3f
+            };
 
-			string[] imagePath;
-			PhysicObject physicBrick;
+            string[] imagePath;
+            PhysicsObject physicBrick;
 
-			switch (type) {
-				case BrickType.Wall1:
-					physicBrick = new PhysicObject(new Texture(Application.Images["brick_uns_door_00000"]), brickDesc);
-					imagePath = new string[50];
-					for (int i = 0; i < 50; i++) {
-						imagePath[i] = string.Format("brick_uns_door_{0:00000}", i);
-					}
-					physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Wall2:
-					physicBrick = new PhysicObject(new Texture(Application.Images["window_uns_open_00000"]), brickDesc);
-					imagePath = new string[50];
-					for (int i = 0; i < 50; i++) {
-						imagePath[i] = string.Format("window_uns_open_{0:00000}", i);
-					}
-					physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Wall3:
-					imagePath = new string[] { "brick_uns_blanks" };
-					physicBrick = new PhysicObject(imagePath, brickDesc);
-					break;
-				case BrickType.Wall4:
-					physicBrick = new PhysicObject(new Texture(Application.Images["brick_uns_roof_00000"]), brickDesc);
-					imagePath = new string[24];
-					for (int i = 0; i < 24; i++) {
-						imagePath[i] = string.Format("brick_uns_roof_{0:00000}", i);
-					}
-					physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Shooting:
-					physicBrick = new PhysicObject(new Texture(Application.Images["brick_uns_cannon_00000"]), brickDesc);
-					imagePath = new string[17];
-					for (int i = 0; i < 17; i++) {
-						imagePath[i] = string.Format("brick_uns_cannon_{0:00000}", i);
-					}
-					physicBrick.AddAnimation(imagePath);
+            switch (type) {
+                case BrickType.Wall1:
+                    physicBrick = new PhysicsObject(new Texture(Application.Images["brick_uns_door_00000"]), brickDesc);
+                    imagePath = new string[50];
+                    for (int i = 0; i < 50; i++) {
+                        imagePath[i] = string.Format("brick_uns_door_{0:00000}", i);
+                    }
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Wall2:
+                    physicBrick = new PhysicsObject(new Texture(Application.Images["window_uns_open_00000"]), brickDesc);
+                    imagePath = new string[50];
+                    for (int i = 0; i < 50; i++) {
+                        imagePath[i] = string.Format("window_uns_open_{0:00000}", i);
+                    }
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Wall3:
+                    imagePath = new string[] { "brick_uns_blanks" };
+                    physicBrick = new PhysicsObject(imagePath, brickDesc);
+                    break;
+                case BrickType.Wall4:
+                    physicBrick = new PhysicsObject(new Texture(Application.Images["brick_uns_roof_00000"]), brickDesc);
+                    imagePath = new string[24];
+                    for (int i = 0; i < 24; i++) {
+                        imagePath[i] = string.Format("brick_uns_roof_{0:00000}", i);
+                    }
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Shooting:
+                    physicBrick = new PhysicsObject(new Texture(Application.Images["brick_uns_cannon_00000"]), brickDesc);
+                    imagePath = new string[17];
+                    for (int i = 0; i < 17; i++) {
+                        imagePath[i] = string.Format("brick_uns_cannon_{0:00000}", i);
+                    }
+                    physicBrick.AddAnimation(imagePath);
                     physicBrick.Speed = 48;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException("type");
-			}
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("type");
+            }
 
-			Brick brick = new Brick() {
-				PhysicObject = physicBrick,
-				Side = Side.Unspecified,
-				Type = type
-			};
+            Brick brick = new Brick() {
+                PhysicObject = physicBrick,
+                Side = Side.Unspecified,
+                Type = type
+            };
 
-			brick.PhysicObject.Body.LinearDamping = 10;
-			brick.PhysicObject.Body.UserData = brick;
-			bricks.Add(brick);
-		}
-		
-		private void OnBroadphaseCollision(ref FixtureProxy proxyA, ref FixtureProxy proxyB)
-        {
+            brick.PhysicObject.Body.LinearDamping = 10;
+            brick.PhysicObject.Body.UserData = brick;
+            bricks.Add(brick);
+        }
+
+        private void OnBroadphaseCollision(ref FixtureProxy proxyA, ref FixtureProxy proxyB) {
             if (proxyA.Fixture.Body.UserData != null && proxyB.Fixture.Body.UserData != null && proxyA.Fixture.Body.UserData is Brick && proxyB.Fixture.Body.UserData is Brick) {
                 Brick brick1 = (Brick)proxyA.Fixture.Body.UserData;
                 Brick brick2 = (Brick)proxyB.Fixture.Body.UserData;
                 if (brick1.Side == Side.Unspecified && brick2.Side != Side.Unspecified) {
                     proxyA.Fixture.Body.LinearDamping = 0.3f;
-                    TakeBrick(brick1,brick2.Side);
+                    TakeBrick(brick1, brick2.Side);
                 }
                 if (brick2.Side == Side.Unspecified && brick1.Side != Side.Unspecified) {
                     proxyB.Fixture.Body.LinearDamping = 0.3f;
-					TakeBrick(brick2, brick1.Side);
+                    TakeBrick(brick2, brick1.Side);
 
                 }
             } else {
-                
-            }
-		}
 
-        public void OnStateExitted(IState nextState)
-        {
-			music.Stop();
+            }
         }
 
-        public void Update(float dt)
-        {
-            blackoutAmount -= dt*100.0f;
+        public void OnStateExitted(IState nextState) {
+            music.Stop();
+        }
 
-            if (blackoutAmount < 0) blackoutAmount = 0.0f;
+        public void Update(float dt) {
+            blackoutAmount -= dt * 100.0f;
 
-            if (blackoutAmount > 0)
-            {
+            if (blackoutAmount < 0)
+                blackoutAmount = 0.0f;
+
+            if (blackoutAmount > 0) {
                 _roundStopwatch.Restart();
                 _dropPackagesStopwatch.Restart();
                 _shootingStopwatch.Restart();
@@ -467,56 +449,54 @@ namespace CompoEngine.States
                 return;
             }
 
-			foreach (var brick in bricks) {
-				if (rand.NextDouble() > 0.9999) {
-					if (brick.Type!=BrickType.Shooting&&brick.PhysicObject.Images.Count > 1 && brick.PhysicObject.Animation != 1) {
-						brick.PhysicObject.Animation = 1;
-					}
-				}
-			}
-            if (_shootingStopwatch.ElapsedMilliseconds > 30000)
-            {
+            foreach (var brick in bricks) {
+                if (rand.NextDouble() > 0.9999) {
+                    if (brick.Type != BrickType.Shooting && brick.PhysicObject.Images.Count > 1 && brick.PhysicObject.Animation != 1) {
+                        brick.PhysicObject.Animation = 1;
+                    }
+                }
+            }
+            if (_shootingStopwatch.ElapsedMilliseconds > 30000) {
                 // shoot
-				foreach (var brick in bricks) {
-					if (new Random().NextDouble() > 0.9) {
-						if (brick.PhysicObject.Images.Count > 1 && brick.PhysicObject.Animation!=1) {
-							brick.PhysicObject.Animation = 1;
-						}
-					}
-					if (brick.Type == BrickType.Shooting) {
+                foreach (var brick in bricks) {
+                    if (new Random().NextDouble() > 0.9) {
+                        if (brick.PhysicObject.Images.Count > 1 && brick.PhysicObject.Animation != 1) {
+                            brick.PhysicObject.Animation = 1;
+                        }
+                    }
+                    if (brick.Type == BrickType.Shooting) {
 
-						var alpha = brick.PhysicObject.Body.Rotation;
-						var dir = new Microsoft.Xna.Framework.Vector2((float)Math.Cos(alpha), (float)Math.Sin(alpha));
+                        var alpha = brick.PhysicObject.Body.Rotation;
+                        var dir = new Microsoft.Xna.Framework.Vector2((float)Math.Cos(alpha), (float)Math.Sin(alpha));
 
-                
+
 
                         Microsoft.Xna.Framework.Vector2 position = brick.PhysicObject.Body.Position + 0.5f * dir;
-						brick.PhysicObject.Animation = 1;
+                        brick.PhysicObject.Animation = 1;
                         var ball = AddBall(new Vector2f(position.X, position.Y));
 
                         var impulse = 70.0f * dir;
                         ball.PhysicObject.Body.ApplyLinearImpulse(impulse);
 
-						Sound sound = Application.Sounds["canon shot"];
-						if(sound.Status!=SoundStatus.Playing)
-							sound.Play();
+                        Sound sound = Application.Sounds["canon shot"];
+                        if (sound.Status != SoundStatus.Playing)
+                            sound.Play();
 
                         balls.Add(ball);
                     }
                 }
 
-				
 
-                _shootingStopwatch.Restart();                
+
+                _shootingStopwatch.Restart();
             }
 
-            if (_roundStopwatch.ElapsedMilliseconds > roundLength)
-            {
+            if (_roundStopwatch.ElapsedMilliseconds > roundLength) {
                 // round ended
                 currentPlayer = currentPlayer == Side.Left ? Side.Right : Side.Left;
-                
+
                 Shoot();
-                
+
                 if (currentMouseJoint != null && _currentFixture != null) {
                     Application.World.RemoveJoint(currentMouseJoint);
                     _currentFixture = null;
@@ -526,8 +506,7 @@ namespace CompoEngine.States
                 _roundStopwatch.Restart();
             }
 
-            if (_dropPackagesStopwatch.ElapsedMilliseconds > 6000)
-            {
+            if (_dropPackagesStopwatch.ElapsedMilliseconds > 6000) {
                 DropBlock();
                 _dropPackagesStopwatch.Restart();
             }
@@ -535,18 +514,12 @@ namespace CompoEngine.States
             var numberOfActiveBrickPlayerLeft = 0;
             var numberOfActiveBrickPlayerRight = 0;
 
-            if (!Application.GameConfig.IsGameOver)
-            {
-                foreach (var brick in bricks)
-                {
-                    if (brick.PhysicObject.Body.Position.Y < gameOverLineOffset)
-                    {
-                        if (brick.Side == Side.Left)
-                        {
+            if (!Application.GameConfig.IsGameOver) {
+                foreach (var brick in bricks) {
+                    if (brick.PhysicObject.Body.Position.Y < gameOverLineOffset) {
+                        if (brick.Side == Side.Left) {
                             numberOfActiveBrickPlayerLeft++;
-                        }
-                        else if(brick.Side == Side.Right)
-                        {
+                        } else if (brick.Side == Side.Right) {
                             numberOfActiveBrickPlayerRight++;
                         }
                     }
@@ -554,8 +527,7 @@ namespace CompoEngine.States
             }
 
 
-            if (!Application.GameConfig.IsGameOver && (numberOfActiveBrickPlayerLeft == 0 || numberOfActiveBrickPlayerRight == 0))
-            {
+            if (!Application.GameConfig.IsGameOver && (numberOfActiveBrickPlayerLeft == 0 || numberOfActiveBrickPlayerRight == 0)) {
                 Application.GameConfig.IsGameOver = true;
                 wygrywaSide = numberOfActiveBrickPlayerLeft > 0 ? Side.Left : Side.Right;
             }
@@ -563,54 +535,50 @@ namespace CompoEngine.States
             if (Application.GameConfig.IsGameOver) {
                 gameOverSpriteScale = Math.Min(gameOverSpriteScale + dt * 3.0f, 1.0f);
                 gameOverLeftSprite.Color = wygrywaSide == Side.Left ? new Color(255, 255, 255, (byte)(255.0f * (gameOverSpriteScale))) : new Color(0, 0, 0, 0);
-                gameOverRightSprite.Color = wygrywaSide == Side.Right ? new Color(255, 255, 255, (byte)(255.0f * ( gameOverSpriteScale))) : new Color(0, 0, 0, 0);
+                gameOverRightSprite.Color = wygrywaSide == Side.Right ? new Color(255, 255, 255, (byte)(255.0f * (gameOverSpriteScale))) : new Color(0, 0, 0, 0);
             }
-            
-            leftPlayerSprite.Color = new Color(255,255,255  ,(byte) (currentPlayer == Side.Left ? 255 : 100));
-			leftPlayerSprite.Scale = currentPlayer == Side.Left ? new Vector2f(1.3f,1.3f) : new Vector2f(0.5f,0.5f);
-            rightPlayerSprite.Color = new Color(255,255,255  ,(byte) (currentPlayer == Side.Right ? 255 : 100));
-			rightPlayerSprite.Scale = currentPlayer == Side.Right ? new Vector2f(1.3f, 1.3f) : new Vector2f(0.5f, 0.5f);
-         
-		}
 
-        private void Shoot()
-        {
-            foreach (var brick in bricks)
-            {
-                if (brick.Type == BrickType.Shooting)
-                {
+            leftPlayerSprite.Color = new Color(255, 255, 255, (byte)(currentPlayer == Side.Left ? 255 : 100));
+            leftPlayerSprite.Scale = currentPlayer == Side.Left ? new Vector2f(1.3f, 1.3f) : new Vector2f(0.5f, 0.5f);
+            rightPlayerSprite.Color = new Color(255, 255, 255, (byte)(currentPlayer == Side.Right ? 255 : 100));
+            rightPlayerSprite.Scale = currentPlayer == Side.Right ? new Vector2f(1.3f, 1.3f) : new Vector2f(0.5f, 0.5f);
+
+        }
+
+        private void Shoot() {
+            foreach (var brick in bricks) {
+                if (brick.Type == BrickType.Shooting) {
                     var alpha = brick.PhysicObject.Body.Rotation;
-                    var dir = new Microsoft.Xna.Framework.Vector2((float) Math.Cos(alpha), (float) Math.Sin(alpha));
+                    var dir = new Microsoft.Xna.Framework.Vector2((float)Math.Cos(alpha), (float)Math.Sin(alpha));
 
-                    Microsoft.Xna.Framework.Vector2 position = brick.PhysicObject.Body.Position + 0.5f*dir;
+                    Microsoft.Xna.Framework.Vector2 position = brick.PhysicObject.Body.Position + 0.5f * dir;
                     brick.PhysicObject.Animation = 1;
                     var ball = AddBall(new Vector2f(position.X, position.Y));
 
-                    var impulse = 70.0f*dir;
+                    var impulse = 70.0f * dir;
                     ball.PhysicObject.Body.ApplyLinearImpulse(impulse);
 
-					Emitter emitter = new Emitter(new Texture(Application.Images["trail"]), new Vector2f(position.X, position.Y), new Vector2f(0, 0));
-					emitter.emitterLifeSpan = 0.3f;
-					emitter.spawnRate = 0.01f;
-					emitter.velScale = 0;
-					emitter.block = ball.PhysicObject;
-					emitters.Add(emitter);
+                    Emitter emitter = new Emitter(new Texture(Application.Images["trail"]), new Vector2f(position.X, position.Y), new Vector2f(0, 0));
+                    emitter.emitterLifeSpan = 0.3f;
+                    emitter.spawnRate = 0.01f;
+                    emitter.velScale = 0;
+                    emitter.block = ball.PhysicObject;
+                    emitters.Add(emitter);
 
                     balls.Add(ball);
 
-					Sound sound = Application.Sounds["canon shot"];
-					if (sound.Status != SoundStatus.Playing) {
-						sound.PlayingOffset = Time.FromMilliseconds(0);
-						sound.Play();
-					}
+                    Sound sound = Application.Sounds["canon shot"];
+                    if (sound.Status != SoundStatus.Playing) {
+                        sound.PlayingOffset = Time.FromMilliseconds(0);
+                        sound.Play();
+                    }
                 }
             }
         }
 
-        public void Draw(float dt)
-        {
+        public void Draw(float dt) {
 
-            backgroundSprite.Position = new Vector2f(0.0f,0.0f);
+            backgroundSprite.Position = new Vector2f(0.0f, 0.0f);
 
             Application.Window.Draw(backgroundSprite);
 
@@ -625,23 +593,23 @@ namespace CompoEngine.States
             _ground3.Draw(dt);
             _ground1.Draw(dt);
             _ground2.Draw(dt);
-            
-            
-			foreach (var emitter in emitters) {
-				emitter.Draw(dt);
-			}
+
+
+            foreach (var emitter in emitters) {
+                emitter.Draw(dt);
+            }
 
             //gwiazdkaEmitter.Draw();
 
 
-            if (!Application.GameConfig.IsGameOver)
-            {
+            if (!Application.GameConfig.IsGameOver) {
                 float seconds = (roundLength - _roundStopwatch.ElapsedMilliseconds) / 1000.0f;
-                if (seconds < 0) seconds = 0;
+                if (seconds < 0)
+                    seconds = 0;
                 timerText.DisplayedString = String.Format("{0:0.0}s", seconds);
                 var frame = timerText.GetGlobalBounds();
                 var percent = ((_roundStopwatch.ElapsedMilliseconds) / roundLength);
-                timerText.Scale = new Vector2f(1.0f, 1.0f) + 1.0f *  new Vector2f(percent, percent);
+                timerText.Scale = new Vector2f(1.0f, 1.0f) + 1.0f * new Vector2f(percent, percent);
                 timerText.FillColor = currentPlayer == Side.Left ? new Color(0, 0, 255) : new Color(255, 0, 0);
                 timerText.Position = new Vector2f(currentPlayer == Side.Left ? (512.0f - 400.0f) : (512.0f - frame.Width + 400.0f), 200.0f);
 
@@ -652,37 +620,35 @@ namespace CompoEngine.States
                 currentPlayerText.FillColor = currentPlayer == Side.Left ? new Color(0, 0, 255) : new Color(255, 0, 0);
 
                 Application.Window.Draw(timerText);
-                Application.Window.Draw(currentPlayerText);       
+                Application.Window.Draw(currentPlayerText);
             }
 
             Application.Window.Draw(leftPlayerSprite);
             Application.Window.Draw(rightPlayerSprite);
 
-			if (Application.GameConfig.IsGameOver) {
-				if (wygrywaSide == Side.Left) {
-					gameOverLeftSprite.Color = new Color(255, 255, 255, (byte)goalpha);
-					Application.Window.Draw(gameOverLeftSprite);
-				} else {
-					gameOverRightSprite.Color = new Color(255, 255, 255,(byte) goalpha);
-					Application.Window.Draw(gameOverRightSprite);
-				}
-				goalpha+=2;
-				goalpha = Math.Min(255,Math.Max((byte)0, goalpha));
-			}
+            if (Application.GameConfig.IsGameOver) {
+                if (wygrywaSide == Side.Left) {
+                    gameOverLeftSprite.Color = new Color(255, 255, 255, (byte)goalpha);
+                    Application.Window.Draw(gameOverLeftSprite);
+                } else {
+                    gameOverRightSprite.Color = new Color(255, 255, 255, (byte)goalpha);
+                    Application.Window.Draw(gameOverRightSprite);
+                }
+                goalpha += 2;
+                goalpha = Math.Min(255, Math.Max((byte)0, goalpha));
+            }
 
             blackSprite.Color = new Color(255, 255, 255, (byte)blackoutAmount);
             blackSprite.Position = new Vector2f(0.0f, 0.0f);
             blackSprite.Scale = new Vector2f(1.0f, 1.0f);
 
-            Application.Window.Draw(blackSprite);            
+            Application.Window.Draw(blackSprite);
         }
 
-        public void OnMouseMoved(object sender, MouseMoveEventArgs e)
-        {
-            if (currentMouseJoint != null && _currentFixture != null)
-            {
+        public void OnMouseMoved(object sender, MouseMoveEventArgs e) {
+            if (currentMouseJoint != null && _currentFixture != null) {
                 var mousePos = new Microsoft.Xna.Framework.Vector2(e.X, e.Y);
-                mousePos /= PhysicObject.PhysicScale;
+                mousePos /= PhysicsObject.PhysicScale;
 
                 if (currentPlayer == Side.Left) {
                     mousePos.X = Math.Min(mousePos.X, 5.0f);
@@ -693,10 +659,8 @@ namespace CompoEngine.States
             }
         }
 
-        public void OnMouseButtonReleased(object sender, MouseButtonEventArgs e)
-        {
-            if (currentMouseJoint != null && _currentFixture != null)
-            {
+        public void OnMouseButtonReleased(object sender, MouseButtonEventArgs e) {
+            if (currentMouseJoint != null && _currentFixture != null) {
                 Application.World.RemoveJoint(currentMouseJoint);
 
                 _currentFixture = null;
@@ -704,88 +668,85 @@ namespace CompoEngine.States
             }
         }
 
-		private void TakeBrick(Brick brick,Side side) {
-			brick.Side = side;
-			string sufix="";
-			if (side == Side.Left) {
-				sufix = "";
-			} else if (side == Side.Right) {
-				sufix = "2";
-			}
+        private void TakeBrick(Brick brick, Side side) {
+            brick.Side = side;
+            string sufix = "";
+            if (side == Side.Left) {
+                sufix = "";
+            } else if (side == Side.Right) {
+                sufix = "2";
+            }
 
-			string[] imagePath;
-			PhysicObject physicBrick = brick.PhysicObject;
+            string[] imagePath;
+            PhysicsObject physicBrick = brick.PhysicObject;
 
-			switch (brick.Type) {
-				case BrickType.Wall1:
-					imagePath = new string[50];
-					for (int i = 0; i < 50; i++) {
-						imagePath[i] = string.Format("brick" + sufix + "_door_{0:00000}", i);
-					}
-					physicBrick.Images.Clear();
-					physicBrick.AddAnimation(new string[]{"brick" + sufix + "_door_00000"});
-					physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Wall2:
-					imagePath = new string[50];
-					for (int i = 0; i < 50; i++) {
-						imagePath[i] = string.Format("window" + sufix + "_open_{0:00000}", i);
-					}
-					physicBrick.Images.Clear();
-					physicBrick.AddAnimation(new string[]{"window" + sufix + "_open_00000"});
-					physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Wall3:
-					physicBrick.Images.Clear();
-					physicBrick.AddAnimation(new string[] { "brick" + sufix + "_blanks" });
-					break;
-				case BrickType.Wall4:
-					imagePath = new string[24];
-					for (int i = 0; i < 24; i++) {
-						imagePath[i] = string.Format("brick" + sufix + "_roof_{0:00000}", i);
-					}
-					physicBrick.Images.Clear();
-					physicBrick.AddAnimation(new string[] { "brick" + sufix + "_roof_00000" });
-					physicBrick.AddAnimation(imagePath);
-					break;
-				case BrickType.Shooting:
-					imagePath = new string[17];
-					for (int i = 0; i < 17; i++) {
-						imagePath[i] = string.Format("brick" + sufix + "_cannon_{0:00000}", i);
-					}
-					physicBrick.Images.Clear();
-					physicBrick.AddAnimation(new string[] { "brick" + sufix + "_cannon_00000" });
-					physicBrick.AddAnimation(imagePath);
-					physicBrick.Speed = 48;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException("type");
-			}
-		}
+            switch (brick.Type) {
+                case BrickType.Wall1:
+                    imagePath = new string[50];
+                    for (int i = 0; i < 50; i++) {
+                        imagePath[i] = string.Format("brick" + sufix + "_door_{0:00000}", i);
+                    }
+                    physicBrick.Images.Clear();
+                    physicBrick.AddAnimation(new string[] { "brick" + sufix + "_door_00000" });
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Wall2:
+                    imagePath = new string[50];
+                    for (int i = 0; i < 50; i++) {
+                        imagePath[i] = string.Format("window" + sufix + "_open_{0:00000}", i);
+                    }
+                    physicBrick.Images.Clear();
+                    physicBrick.AddAnimation(new string[] { "window" + sufix + "_open_00000" });
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Wall3:
+                    physicBrick.Images.Clear();
+                    physicBrick.AddAnimation(new string[] { "brick" + sufix + "_blanks" });
+                    break;
+                case BrickType.Wall4:
+                    imagePath = new string[24];
+                    for (int i = 0; i < 24; i++) {
+                        imagePath[i] = string.Format("brick" + sufix + "_roof_{0:00000}", i);
+                    }
+                    physicBrick.Images.Clear();
+                    physicBrick.AddAnimation(new string[] { "brick" + sufix + "_roof_00000" });
+                    physicBrick.AddAnimation(imagePath);
+                    break;
+                case BrickType.Shooting:
+                    imagePath = new string[17];
+                    for (int i = 0; i < 17; i++) {
+                        imagePath[i] = string.Format("brick" + sufix + "_cannon_{0:00000}", i);
+                    }
+                    physicBrick.Images.Clear();
+                    physicBrick.AddAnimation(new string[] { "brick" + sufix + "_cannon_00000" });
+                    physicBrick.AddAnimation(imagePath);
+                    physicBrick.Speed = 48;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("type");
+            }
+        }
 
-        public void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
-        {
-            if (currentMouseJoint == null && _currentFixture == null)
-            {
+        public void OnMouseButtonPressed(object sender, MouseButtonEventArgs e) {
+            if (currentMouseJoint == null && _currentFixture == null) {
                 var mousePos = new Microsoft.Xna.Framework.Vector2(e.X, e.Y);
-                mousePos /= PhysicObject.PhysicScale;
-              
+                mousePos /= PhysicsObject.PhysicScale;
+
                 _currentFixture = Application.World.TestPoint(mousePos);
 
-                if (_currentFixture != null)
-                {
-					if (_currentFixture.Body.UserData != null) {
-						Brick brick = _currentFixture.Body.UserData as Brick;
-						if (brick.Side == Side.Unspecified) {
-							TakeBrick(brick, currentPlayer);//.Side = currentPlayer;
-							_currentFixture.Body.LinearDamping = 0.3f;
-						} else if (brick.Side != currentPlayer) {
-							_currentFixture = null;
-							return;
-						}
-					}
+                if (_currentFixture != null) {
+                    if (_currentFixture.Body.UserData != null) {
+                        Brick brick = _currentFixture.Body.UserData as Brick;
+                        if (brick.Side == Side.Unspecified) {
+                            TakeBrick(brick, currentPlayer);//.Side = currentPlayer;
+                            _currentFixture.Body.LinearDamping = 0.3f;
+                        } else if (brick.Side != currentPlayer) {
+                            _currentFixture = null;
+                            return;
+                        }
+                    }
                     currentMouseJoint = new FixedMouseJoint(_currentFixture.Body, mousePos);
-                    currentMouseJoint.MaxForce = 50.0f *_currentFixture.Body.Mass;
+                    currentMouseJoint.MaxForce = 50.0f * _currentFixture.Body.Mass;
 
                     Application.World.AddJoint(currentMouseJoint);
                 }
@@ -796,18 +757,13 @@ namespace CompoEngine.States
             }
         }
 
-        public void OnKeyReleased(object sender, KeyEventArgs e)
-        {
+        public void OnKeyReleased(object sender, KeyEventArgs e) {
         }
 
-        public void OnKeyPressed(object sender, KeyEventArgs e)
-        {
-            if (e.Code == Keyboard.Key.O)
-            {
+        public void OnKeyPressed(object sender, KeyEventArgs e) {
+            if (e.Code == Keyboard.Key.O) {
                 Application.GameConfig.IsGameOver = true;
-            }
-            else if(e.Code == Keyboard.Key.R)
-            {
+            } else if (e.Code == Keyboard.Key.R) {
                 Application.GameConfig.IsGameOver = false;
                 _roundStopwatch.Restart();
                 _shootingStopwatch.Restart();
@@ -820,9 +776,9 @@ namespace CompoEngine.States
 
 
             if (gameOverSpriteScale >= 0.9999f) {
-                
-                
-                
+
+
+
                 Application.Fsm.ChangeToState(typeof(CreditsState));
             }
         }

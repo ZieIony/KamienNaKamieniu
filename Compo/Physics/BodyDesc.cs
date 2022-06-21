@@ -1,9 +1,7 @@
 ﻿using FarseerPhysics.Dynamics;
 
-namespace CompoEngine.Physic
-{
-    internal class BodyDesc
-    {
+namespace CompoEngine.Physics {
+    internal class BodyDesc {
         public BodyType BodyType;
         public Microsoft.Xna.Framework.Vector2 StartPos;
         public FarseerPhysics.Collision.Shapes.Shape Shape;

@@ -1,9 +1,7 @@
 ﻿using SFML.Window;
 
-namespace CompoEngine.States
-{
-    public interface IState
-    {
+namespace CompoEngine.States {
+    public interface IState {
         void Update(float dt);
         void Draw(float dt);
 

@@ -1,38 +1,32 @@
-﻿using System;
-using CompoEngine.States;
+﻿using CompoEngine.States;
 using FarseerPhysics.Collision;
-using Microsoft.Xna.Framework;
-using SFML.Window;
-using SFML.Graphics;
 using FarseerPhysics.Dynamics;
-using System.IO;
-using System.Collections.Generic;
-using Vector2 = Microsoft.Xna.Framework.Vector2;
 using SFML.Audio;
+using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 
-namespace CompoEngine
-{
-    internal static class Application
-    {
+namespace CompoEngine {
+    internal static class Application {
         public static RenderWindow Window;
         public static World World;
         public static Fsm Fsm { get; set; }
         public static Dictionary<string, Image> Images { get; set; }
         public static GameConfig GameConfig { get; set; }
 
-        private static void Main()
-        {
+        private static void Main() {
             // Create the main window
             Window = new RenderWindow(new VideoMode(1024, 768), "Kamień na kamieniu");
             World = new World(new Vector2(0f, 9.81f), new AABB(new Vector2(0.0f), new Vector2(10.0f, 7.5f)));
             GameConfig = new GameConfig();
             Fsm = new Fsm();
-            
-            LoadMessages();
-			LoadSounds();
 
-            //LoadMessages();
+            LoadMessages();
+            LoadSounds();
 
             var introState = new IntroState();
             var introState2 = new IntroState2();
@@ -63,8 +57,7 @@ namespace CompoEngine
             var prevTime = clock.ElapsedTime;
 
             // Start the game loop
-            while (Window.IsOpen)
-            {
+            while (Window.IsOpen) {
                 var time = clock.ElapsedTime;
                 var frameTime = (time - prevTime).AsMilliseconds();
                 prevTime = time;
@@ -85,35 +78,31 @@ namespace CompoEngine
             }
         }
 
-        private static void OnKeyPressed(object sender, KeyEventArgs e)
-        {
-            var window = (Window) sender;
-            if (e.Code == Keyboard.Key.Escape)
-            {
+        private static void OnKeyPressed(object sender, KeyEventArgs e) {
+            var window = (Window)sender;
+            if (e.Code == Keyboard.Key.Escape) {
                 window.Close();
             }
         }
 
-		private static void LoadMessages() {
-			Images = new Dictionary<string, Image>();
-			string path = String.Format("{0}\\assets", Directory.GetCurrentDirectory());
-			string[] files = Directory.GetFiles(path, "*.png", SearchOption.AllDirectories);
-			foreach (string s in files) {
-				Image image = new Image(s);
-				int start = s.LastIndexOfAny(new char[] { '/', '\\' }) + 1;
-				Images[s.Substring(start, s.LastIndexOf('.') - start)] = image;
-			}
-		}
+        private static void LoadMessages() {
+            Images = new Dictionary<string, Image>();
+            string path = String.Format("{0}\\assets", Directory.GetCurrentDirectory());
+            string[] files = Directory.GetFiles(path, "*.png", SearchOption.AllDirectories);
+            foreach (string s in files) {
+                Image image = new Image(s);
+                int start = s.LastIndexOfAny(new char[] { '/', '\\' }) + 1;
+                Images[s.Substring(start, s.LastIndexOf('.') - start)] = image;
+            }
+        }
 
-		private static void LoadSounds()
-		{
-			Sounds = new Dictionary<string, Sound>();
+        private static void LoadSounds() {
+            Sounds = new Dictionary<string, Sound>();
             string path = String.Format("{0}\\assets", Directory.GetCurrentDirectory());
             string[] files = Directory.GetFiles(path, "*.wav", SearchOption.AllDirectories);
-            foreach (string s in files)
-            {
+            foreach (string s in files) {
                 try {
-                    SFML.Audio.SoundBuffer buffer = new SFML.Audio.SoundBuffer(s);
+                    SoundBuffer buffer = new SoundBuffer(s);
                     int start = s.LastIndexOfAny(new char[] { '/', '\\' }) + 1;
                     Sounds[s.Substring(start, s.LastIndexOf('.') - start)] = new Sound(buffer);
                 } catch (Exception e) {
@@ -122,16 +111,14 @@ namespace CompoEngine
         }
 
 
-        private static void OnClosed(object sender, EventArgs e)
-        {
-            Window window = (Window) sender;
+        private static void OnClosed(object sender, EventArgs e) {
+            Window window = (Window)sender;
             window.Close();
         }
 
-        private static void OnResized(object sender, SizeEventArgs e)
-        {
+        private static void OnResized(object sender, SizeEventArgs e) {
         }
 
-		public static Dictionary<string, Sound> Sounds { get; set; }
-	}
+        public static Dictionary<string, Sound> Sounds { get; set; }
+    }
 }
